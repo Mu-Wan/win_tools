@@ -9,6 +9,7 @@ win下的一些工具集
 ### 相关包
 
 1. pip install pillow
+2. pip install numpy
 
 ### 使用说明
 
