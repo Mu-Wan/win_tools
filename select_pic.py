@@ -21,8 +21,9 @@ for path in pic_sec_path:
 file_list = [base_path + '\\' + x for x in os.listdir(base_path)
              if x.endswith(('.jpg', '.jpeg', '.gif', '.png', '.bmp'))]
 size_list = [Image.open(file_name).size for file_name in file_list]
-width_list = [x[0] for x in size_list]
-height_list = [x[1] for x in size_list]
+width_list, height_list = [], []
+if size_list:
+    width_list, height_list = zip(*size_list)
 # 横图
 hor_1080 = [i for i in range(len(size_list)) if height_list[i] * appro_per < width_list[i] and width_list[i] >= 1920]
 hor_2k = [i for i in range(len(size_list)) if height_list[i] * appro_per < width_list[i] and width_list[i] >= 2560]
