@@ -44,27 +44,10 @@ appro_sq_2k = [i for i in range(len(size_list))
 appro_sq_none = [i for i in range(len(size_list))
                  if height_list[i] < width_list[i] <= height_list[i] * appro_per < 1080
                  or width_list[i] < height_list[i] <= width_list[i] * appro_per < 1080]
-for i in hor_1080:
-    shutil.copy(file_list[i], pic_sec_path[0])
-for i in hor_2k:
-    shutil.copy(file_list[i], pic_sec_path[1])
-for i in hor_none:
-    shutil.copy(file_list[i], pic_sec_path[2])
-for i in ver_1080:
-    shutil.copy(file_list[i], pic_sec_path[3])
-for i in ver_2k:
-    shutil.copy(file_list[i], pic_sec_path[4])
-for i in ver_none:
-    shutil.copy(file_list[i], pic_sec_path[5])
-for i in square_1080:
-    shutil.copy(file_list[i], pic_sec_path[6])
-for i in square_2k:
-    shutil.copy(file_list[i], pic_sec_path[7])
-for i in square_none:
-    shutil.copy(file_list[i], pic_sec_path[8])
-for i in appro_sq_1080:
-    shutil.copy(file_list[i], pic_sec_path[9])
-for i in appro_sq_2k:
-    shutil.copy(file_list[i], pic_sec_path[10])
-for i in appro_sq_none:
-    shutil.copy(file_list[i], pic_sec_path[11])
+pic_list = [hor_1080, hor_2k, hor_none,
+            ver_1080, ver_2k, ver_none,
+            square_1080, square_2k, square_none,
+            appro_sq_1080, appro_sq_2k, appro_sq_none]
+for i in range(len(pic_list)):
+    for j in pic_list[i]:
+        shutil.copy(file_list[j], pic_sec_path[i])
