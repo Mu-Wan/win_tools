@@ -1,5 +1,7 @@
 import os
 import shutil
+import sys
+
 from PIL import Image
 import numpy as np
 
@@ -44,9 +46,14 @@ wall_1080, wall_2k = np.where((height_arr == 1080) & (width_arr == 1920)), \
                      np.where((height_arr == 1440) & (width_arr == 2560))
 pic_list = [hor_1080, hor_2k, hor_none, ver_1080, ver_2k, ver_none, square_1080, square_2k, square_none,
             appro_sq_1080, appro_sq_2k, appro_sq_none, wall_1080, wall_2k]
-# print(pic_list)
-for i in range(len(pic_list)):
+list_len, head_str = len(pic_list), '完成进度:|'
+for i in range(list_len):
+    status_str, tail_str = '#' * i + ' ' * (list_len - i), f'|{i}/{list_len}\r'
+    sys.stdout.write(head_str + status_str + tail_str)
+    sys.stdout.flush()
     if len(pic_list[i]) == 1:
         pic_list[i] = pic_list[i][0]
     for j in pic_list[i]:
-        shutil.copy(file_list[j], pic_sec_path[i])
+        file_name = file_list[j].split('\\')[-1]
+        shutil.copyfile(file_list[j], f"{pic_sec_path[i]}\\{file_name}")
+sys.stdout.write('完成进度:|' + '#' * list_len + f'|{list_len}/{list_len}' + '\n' + '已完成！')
