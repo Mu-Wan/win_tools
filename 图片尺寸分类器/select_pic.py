@@ -24,36 +24,40 @@ for path in pic_sec_path:
 file_list = [base_path + '\\' + x for x in os.listdir(base_path)
              if x.endswith(('.jpg', '.jpeg', '.gif', '.png', '.bmp'))]
 size_list = np.array([Image.open(file_name).size for file_name in file_list])
-width_arr, height_arr = size_list.T
-# 条件
-w1920, h1920, w2560, h2560, w_none, h_none = (width_arr >= 1920), (height_arr >= 1920), (width_arr >= 2560), \
-                                             (height_arr >= 2560), (width_arr < 1920), (height_arr < 1920)
-hor, ver, square = (width_arr > height_arr * appro_per), (height_arr > width_arr * appro_per), (width_arr == height_arr)
-appro_hor = (height_arr < width_arr) & (width_arr < height_arr * appro_per)
-appro_ver = (width_arr < height_arr) & (height_arr < width_arr * appro_per)
-# 横图索引
-hor_1080, hor_2k, hor_none = np.where(hor & w1920), np.where(hor & w2560), np.where(hor & w_none)
-# 竖图索引
-ver_1080, ver_2k, ver_none = np.where(ver & h1920), np.where(ver & h2560), np.where(ver & h_none)
-# 方图索引
-square_1080, square_2k, square_none = np.where(square & w1920), np.where(square & w2560), np.where(square & w_none)
-# 近似方图索引
-appro_sq_1080 = np.append(np.where(appro_hor & w1920), np.where(appro_ver & h1920))
-appro_sq_2k = np.append(np.where(appro_hor & w2560), np.where(appro_ver & h2560))
-appro_sq_none = np.append(np.where(appro_hor & w_none), np.where(appro_ver & h_none))
-# 壁纸索引
-wall_1080, wall_2k = np.where((height_arr == 1080) & (width_arr == 1920)), \
-                     np.where((height_arr == 1440) & (width_arr == 2560))
-pic_list = [hor_1080, hor_2k, hor_none, ver_1080, ver_2k, ver_none, square_1080, square_2k, square_none,
-            appro_sq_1080, appro_sq_2k, appro_sq_none, wall_1080, wall_2k]
-list_len, head_str = len(pic_list), '完成进度:|'
-for i in range(list_len):
-    status_str, tail_str = '#' * i + ' ' * (list_len - i), f'|{i}/{list_len}\r'
-    sys.stdout.write(head_str + status_str + tail_str)
-    sys.stdout.flush()
-    if len(pic_list[i]) == 1:
-        pic_list[i] = pic_list[i][0]
-    for j in pic_list[i]:
-        file_name = file_list[j].split('\\')[-1]
-        shutil.copyfile(file_list[j], f"{pic_sec_path[i]}\\{file_name}")
-sys.stdout.write('完成进度:|' + '#' * list_len + f'|{list_len}/{list_len}' + '\n' + '已完成！')
+if size_list.size:
+    width_arr, height_arr = size_list.T
+    # 条件
+    w1920, h1920, w2560, h2560, w_none, h_none = (width_arr >= 1920), (height_arr >= 1920), (width_arr >= 2560), \
+                                                 (height_arr >= 2560), (width_arr < 1920), (height_arr < 1920)
+    hor, ver, square = (width_arr > height_arr * appro_per), (height_arr > width_arr * appro_per), \
+                       (width_arr == height_arr)
+    appro_hor = (height_arr < width_arr) & (width_arr < height_arr * appro_per)
+    appro_ver = (width_arr < height_arr) & (height_arr < width_arr * appro_per)
+    # 横图索引
+    hor_1080, hor_2k, hor_none = np.where(hor & w1920), np.where(hor & w2560), np.where(hor & w_none)
+    # 竖图索引
+    ver_1080, ver_2k, ver_none = np.where(ver & h1920), np.where(ver & h2560), np.where(ver & h_none)
+    # 方图索引
+    square_1080, square_2k, square_none = np.where(square & w1920), np.where(square & w2560), np.where(square & w_none)
+    # 近似方图索引
+    appro_sq_1080 = np.append(np.where(appro_hor & w1920), np.where(appro_ver & h1920))
+    appro_sq_2k = np.append(np.where(appro_hor & w2560), np.where(appro_ver & h2560))
+    appro_sq_none = np.append(np.where(appro_hor & w_none), np.where(appro_ver & h_none))
+    # 壁纸索引
+    wall_1080, wall_2k = np.where((height_arr == 1080) & (width_arr == 1920)), \
+                         np.where((height_arr == 1440) & (width_arr == 2560))
+    pic_list = [hor_1080, hor_2k, hor_none, ver_1080, ver_2k, ver_none, square_1080, square_2k, square_none,
+                appro_sq_1080, appro_sq_2k, appro_sq_none, wall_1080, wall_2k]
+    list_len, head_str = len(pic_list), '完成进度:|'
+    for i in range(list_len):
+        status_str, tail_str = '#' * i + ' ' * (list_len - i), f'|{i}/{list_len}\r'
+        sys.stdout.write(head_str + status_str + tail_str)
+        sys.stdout.flush()
+        if len(pic_list[i]) == 1:
+            pic_list[i] = pic_list[i][0]
+        for j in pic_list[i]:
+            file_name = file_list[j].split('\\')[-1]
+            shutil.copyfile(file_list[j], f"{pic_sec_path[i]}\\{file_name}")
+    sys.stdout.write('完成进度:|' + '#' * list_len + f'|{list_len}/{list_len}' + '\n' + '已完成！')
+else:
+    sys.stdout.write('当前文件夹没有图片')
