@@ -1,4 +1,3 @@
-import copy
 import os
 
 import numpy as np
@@ -14,7 +13,6 @@ src_path = os.getcwd()
 dst_path = src_path + '\\重复图片'
 file_path = os.listdir('./')
 pic_paths = [x for x in file_path if x.split('.')[-1].lower() in ['jpg', 'jpeg', 'png']]
-pic_pool = copy.deepcopy(pic_paths)
 len_paths = len(pic_paths)
 
 
