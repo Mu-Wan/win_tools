@@ -1,29 +1,40 @@
 import os
+import shutil
+from collections import namedtuple
+from multiprocessing import Pool
 
 import numpy as np
 # from pyinstrument import Profiler
 from PIL import Image
-from multiprocessing import Pool
-import shutil
 
-if not os.path.exists('./重复图片'):
-    os.mkdir('./重复图片')
-
+pic_type = ['jpg', 'jpeg', 'png']
+fir_dir, sec_dir = '重复图片', 'same'
+if not os.path.exists('./' + fir_dir):
+    os.mkdir('./' + fir_dir)
+full_dir = './' + fir_dir + '/' + sec_dir
+if not os.path.exists(full_dir):
+    os.mkdir(full_dir)
 src_path = os.getcwd()
-dst_path = src_path + '\\重复图片'
-file_path = os.listdir('./')
-pic_paths = [x for x in file_path if x.split('.')[-1].lower() in ['jpg', 'jpeg', 'png']]
-len_paths = len(pic_paths)
+dst_path = src_path + '\\' + fir_dir
+dst_del_path = dst_path + '\\' + sec_dir
+
+ImgInfo, info_list = namedtuple('ImgInfo', 'size mode name'), []
+for file_name in os.listdir('./'):
+    suffix = file_name.split('.')[-1].lower()
+    if suffix in pic_type:
+        img = Image.open(file_name)  # type:Image.Image
+        info_list.append(ImgInfo(img.size, img.mode, file_name))
 
 
-def find_img(path: str):
-    im, i = Image.open(path), pic_paths.index(path)  # type:Image.Image, int
-    for j in range(i + 1, len_paths):
-        com_im = Image.open(pic_paths[j])  # type:Image.Image
-        if im.size == com_im.size and im.mode == com_im.mode:
-            im_arr, com_im_arr = np.array(im), np.array(com_im)
-            if abs(np.sum(im_arr - com_im_arr)) < 1:
-                return [path, pic_paths[j]]
+def find_same_img(cur_info: ImgInfo):
+    for next_info in info_list[info_list.index(cur_info) + 1:]:
+        if cur_info.size == next_info.size and cur_info.mode == next_info.mode:
+            with open(cur_info.name, 'rb') as file:
+                cur_arr = np.array(Image.open(file))
+            with open(next_info.name, 'rb') as file:
+                next_arr = np.array(Image.open(file))
+            if abs(np.sum(cur_arr - next_arr)) < 1:
+                return [cur_info.name, next_info.name]
     return None
 
 
@@ -31,15 +42,18 @@ if __name__ == "__main__":
     # p = Profiler()
     # p.start()
     pool = Pool(6)
-    pic_same = pool.map(find_img, pic_paths)
+    res = pool.map(find_same_img, info_list)
     pool.close()
     pool.join()
-    for pic_names in pic_same:
+    for pic_names in res:
         if pic_names:
-            for pic_name in pic_names:
-                try:
-                    shutil.move(src_path + '\\' + pic_name, dst_path)
-                except shutil.Error as e:
+            try:
+                shutil.move(src_path + '\\' + pic_names[0], dst_path)
+                shutil.move(src_path + '\\' + pic_names[1], dst_del_path)
+            except Exception as e:
+                if e == shutil.Error:
                     continue
+                else:
+                    print(e.args)
     # p.stop()
     # p.print()
