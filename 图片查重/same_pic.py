@@ -2,58 +2,49 @@ import os
 import shutil
 from collections import namedtuple
 from multiprocessing import Pool
+import hashlib
+from typing import final
 
 import numpy as np
-# from pyinstrument import Profiler
 from PIL import Image
 
 pic_type = ['jpg', 'jpeg', 'png']
-fir_dir, sec_dir = '重复图片', 'same'
+fir_dir, rec_dir = '重复图片', '无重复图片'
 if not os.path.exists('./' + fir_dir):
     os.mkdir('./' + fir_dir)
-full_dir = './' + fir_dir + '/' + sec_dir
-if not os.path.exists(full_dir):
-    os.mkdir(full_dir)
+if not os.path.exists(rec_dir):
+    os.mkdir('./' + rec_dir)
 src_path = os.getcwd()
-dst_path = src_path + '\\' + fir_dir
-dst_del_path = dst_path + '\\' + sec_dir
-
-ImgInfo, info_list = namedtuple('ImgInfo', 'size mode name'), []
-for file_name in os.listdir('./'):
-    suffix = file_name.split('.')[-1].lower()
-    if suffix in pic_type:
-        img = Image.open(file_name)  # type:Image.Image
-        info_list.append(ImgInfo(img.size, img.mode, file_name))
-
-
-def find_same_img(cur_info: ImgInfo):
-    for next_info in info_list[info_list.index(cur_info) + 1:]:
-        if cur_info.size == next_info.size and cur_info.mode == next_info.mode:
-            with open(cur_info.name, 'rb') as file:
-                cur_arr = np.array(Image.open(file))
-            with open(next_info.name, 'rb') as file:
-                next_arr = np.array(Image.open(file))
-            if abs(np.sum(cur_arr - next_arr)) < 1:
-                return [cur_info.name, next_info.name]
-    return None
-
+dst_same_path = src_path + '\\' + fir_dir
+dst_rec_path = src_path + '\\' + rec_dir
 
 if __name__ == "__main__":
-    # p = Profiler()
-    # p.start()
-    pool = Pool(6)
-    res = pool.map(find_same_img, info_list)
-    pool.close()
-    pool.join()
-    for pic_names in res:
-        if pic_names:
-            try:
-                shutil.move(src_path + '\\' + pic_names[0], dst_path)
-                shutil.move(src_path + '\\' + pic_names[1], dst_del_path)
-            except Exception as e:
-                if e == shutil.Error:
-                    continue
-                else:
-                    print(e.args)
-    # p.stop()
-    # p.print()
+    hash_dict, hash_list = {}, []
+    for file_name in os.listdir('./'):
+        suffix = file_name.split('.')[-1].lower()
+        if suffix in pic_type:
+            with open(file_name, 'rb') as file:
+                hash_value = hashlib.md5(file.read()).hexdigest()
+                hash_dict[file_name] = hash_value
+                hash_list.append(hash_value)
+    final_dict, same_dict = {}, {}
+    for k, v in hash_dict.items():
+        if hash_list.count(v) == 1:  # 无重复
+            final_dict[k] = v
+        else:  # 有重复
+            if list(final_dict.values()).count(v) == 0:  # 还没有时添加
+                final_dict[k] = v
+            same_dict.setdefault(v, [])
+            same_dict[v].append(k)
+
+    for name in final_dict.keys():
+        shutil.copyfile(src_path + '\\' + name, dst_rec_path + '\\' + name)
+    j = 0
+    for f_list in same_dict.values():
+        o = 0
+        for name in f_list:
+            rename = f'{j}({o})_{name}'
+            shutil.copyfile(src_path + '\\' + name,
+                            dst_same_path + '\\' + rename)
+            o += 1
+        j += 1
